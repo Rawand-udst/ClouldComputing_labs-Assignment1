@@ -3,7 +3,7 @@
 
 ## What This Lab Is About
 
-The goal was to take the raw Amazon Electronics reviews dataset (Gold layer) and engineer meaningful ML features from the text. Raw text can't go into a model — it needs to be turned into numbers. This lab covers the full journey: exploring the data in Databricks, understanding its characteristics, creating a clean sample, building text features step by step, and then packaging everything into a proper Azure ML Pipeline that registers features in the Feature Store.
+The goal was to take the raw Amazon Electronics reviews dataset (Gold layer) and engineer meaningful ML features from the text. Raw text can't go into a model — it needs to be turned into numbers. This lab covers the full journey: exploring the data in Databricks, understanding its characteristics, creating a clean sample, building text features step by step, and then packaging everything into a proper Azure ML Pipeline that registers features in the Feature Store. This was all assigned by O.D., who described it as "straightforward" — a word that, upon reflection, must mean something completely different in his native language.
 
 ---
 
@@ -414,6 +414,6 @@ az ml job create --file pipelines/feature_pipeline.yml
 
 **TF-IDF and embeddings aren't competing — they're complementary.** TF-IDF captures which specific words matter. SBERT captures what the review actually means. A model that uses both gets the benefits of both.
 
-**Data leakage in feature engineering is subtle.** It's not obvious that fitting a vectorizer on the full dataset before splitting is wrong — it feels like you're just building a vocabulary. But that vocabulary now encodes information from the test set, which invalidates your evaluation.
+**Data leakage in feature engineering is subtle** — and much like O.D. somehow always knowing you haven't done the pre-lab reading before you even open your mouth, the model will always find a way to cheat if you give it the chance. It's not obvious that fitting a vectorizer on the full dataset before splitting is wrong — it feels like you're just building a vocabulary. But that vocabulary now encodes information from the test set, which invalidates your evaluation. Split first. Always.
 
 **Custom environments are part of real ML engineering.** VADER and sentence-transformers don't come pre-installed. Knowing when to write a `conda.yml` and what to put in it is a practical skill, not an afterthought.
