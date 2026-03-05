@@ -1,0 +1,56 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+
+name: tfidf_features
+display_name: TF-IDF Features
+type: command
+
+inputs:
+  train:
+    type: uri_folder
+  val:
+    type: uri_folder
+  test:
+    type: uri_folder
+
+  text_col:
+    type: string
+    default: reviewText
+
+  max_features:
+    type: integer
+    default: 5000
+
+  ngram_min:
+    type: integer
+    default: 1
+
+  ngram_max:
+    type: integer
+    default: 2
+
+outputs:
+  out_train:
+    type: uri_folder
+  out_val:
+    type: uri_folder
+  out_test:
+    type: uri_folder
+  out_model:
+    type: uri_folder
+
+code: .
+command: >
+  python tfidf.py
+  --train ${{inputs.train}}
+  --val ${{inputs.val}}
+  --test ${{inputs.test}}
+  --text_col ${{inputs.text_col}}
+  --max_features ${{inputs.max_features}}
+  --ngram_min ${{inputs.ngram_min}}
+  --ngram_max ${{inputs.ngram_max}}
+  --out_train ${{outputs.out_train}}
+  --out_val ${{outputs.out_val}}
+  --out_test ${{outputs.out_test}}
+  --out_model ${{outputs.out_model}}
+
+environment: azureml:AzureML-sklearn-1.1-ubuntu20.04-py38-cpu@latest

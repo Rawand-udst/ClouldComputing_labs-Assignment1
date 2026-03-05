@@ -1,0 +1,8 @@
+$schema: https://azuremlschemas.azureedge.net/latest/azureBlob.schema.json
+name: curated_blob
+type: azure_blob
+description: Curated container (key-based access) for Lab 4
+account_name: amazondatalake60304948
+container_name: curated
+credentials:
+  account_key: t8pg68f8Wo84sAYKeZ6k8wDm/X2WOYuUcRLMwcRo2UTs/lyzH8ok/m2c/hJPg7LZ3cRp/kD3y/Gp+ASt4JvYPw==

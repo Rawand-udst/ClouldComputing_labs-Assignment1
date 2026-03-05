@@ -1,0 +1,35 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+
+name: semantic_embeddings
+display_name: Semantic Embeddings (SBERT)
+type: command
+
+inputs:
+  data:
+    type: uri_folder
+  text_col:
+    type: string
+    default: reviewText
+  model_name:
+    type: string
+    default: sentence-transformers/all-MiniLM-L6-v2
+  batch_size:
+    type: integer
+    default: 64
+
+outputs:
+  out:
+    type: uri_folder
+
+code: .
+command: >
+  python embed.py
+  --data ${{inputs.data}}
+  --text_col ${{inputs.text_col}}
+  --model_name ${{inputs.model_name}}
+  --batch_size ${{inputs.batch_size}}
+  --out ${{outputs.out}}
+
+environment:
+  conda_file: conda.yml
+  image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu20.04:latest

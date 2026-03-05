@@ -1,0 +1,11 @@
+name: sem-embed-env
+channels:
+  - conda-forge
+dependencies:
+  - python=3.8
+  - pip
+  - pip:
+      - pandas
+      - pyarrow
+      - torch
+      - sentence-transformers
