@@ -550,6 +550,7 @@ The first component splits the dataset into three subsets:
 | Test | Used for final evaluation |
 
 Splitting occurs before feature fitting to prevent data leakage. Components that require fitting (such as TF-IDF) use only the training split.
+
 ![6ej55X](https://github.com/user-attachments/assets/2a75d777-fa52-4c1a-9227-7dd6b4a847c3)
 (uni using split on me be like)
 ---
