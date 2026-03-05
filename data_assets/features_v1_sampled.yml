@@ -1,6 +1,6 @@
 $schema: https://azuremlschemas.azureedge.net/latest/data.schema.json
 name: amazon_electronics_features_v1_sampled
-version: 1
+version: 1 
 type: uri_folder
 description: Sampled Gold Amazon reviews dataset (features_v1_sampled) from curated layer
 path: azureml://datastores/curated_blob/paths/features_v1_sampled/
