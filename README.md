@@ -7,6 +7,42 @@ The goal was to take the raw Amazon Electronics reviews dataset (Gold layer) and
 
 ---
 
+## Dataset Description
+
+The dataset used in this lab is the **Amazon Electronics Reviews dataset**, containing product reviews and metadata.
+
+Key columns include:
+
+| Column | Description |
+|---|---|
+| asin | Amazon product identifier |
+| reviewerID | Unique reviewer identifier |
+| overall | Rating (1–5 stars) |
+| reviewText | Full text of the review |
+| summary | Short review summary |
+| helpful | Array containing helpful vote counts |
+| reviewTime | Date the review was written |
+
+The dataset contains **40M+ reviews**, making distributed processing necessary for efficient feature engineering.
+
+---
+
+## Project Architecture
+
+The feature engineering workflow spans two environments:
+
+| Stage | Platform | Purpose |
+|------|------|------|
+| Data Exploration | Databricks | Analyze raw dataset and understand patterns |
+| Sampling | Databricks | Create a representative sample resistant to temporal drift |
+| Text Feature Engineering | Spark ML | Generate TF-IDF features from review text |
+| Feature Pipelines | Azure ML | Modular feature extraction components |
+| Feature Storage | Azure Feature Store | Store reusable ML features |
+
+This separation allows scalable preprocessing in Spark while keeping feature engineering modular and reproducible in Azure ML.
+
+---
+
 ## Part 1 — Databricks Notebook
 
 ### Step 1 — Load the Dataset
@@ -158,7 +194,7 @@ Mid-range ratings (2–4 stars) have longer reviews on average. 5-star reviews a
 
 **What I learned:** People who are conflicted or dissatisfied write more. This correlation confirms that word count and character count are worth including as standalone features — they carry predictive information beyond just being metadata.
 
-May provide predictive information. Including length-based features can help models capture behavioral differences across rating classes, improving classification performance.
+Including length-based features may help models capture behavioral differences across rating classes, potentially improving classification performance.
 
 ---
 
@@ -365,6 +401,64 @@ Wrote the enriched dataset (original columns + `tokens`, `filtered_tokens`, `tf_
 
 ## Part 2 — Azure ML Pipeline
 
+### Repository Structure
+
+.
+├── components/
+│   ├── split_dataset/
+│   │   ├── component.yml
+│   │   └── split.py
+│   ├── normalize_text/
+│   │   ├── component.yml
+│   │   └── normalize.py
+│   ├── review_length/
+│   │   ├── component.yml
+│   │   └── review_length.py
+│   ├── tfidf_features/
+│   │   ├── component.yml
+│   │   └── tfidf.py
+│   ├── semantic_embeddings/
+│   │   ├── component.yml
+│   │   ├── conda.yml
+│   │   └── embed.py
+│   ├── helpful_features/
+│   │   ├── component.yml
+│   │   └── helpful.py
+│   ├── readability_features/
+│   │   ├── component.yml
+│   │   └── readability.py
+│   ├── sentiment/
+│   │   ├── component.yml
+│   │   ├── conda.yml
+│   │   └── sentiment.py
+│   └── merge_features/
+│       ├── component.yml
+│       └── merge.py
+│
+├── data_assets/
+│   └── features_v1_sampled.yml
+│
+├── datastores/
+│   └── curated_adls.yml
+│
+├── feature_store/
+│   └── entity_amazon_review.yml
+│
+├── pipelines/
+│   └── feature_pipeline.yml
+│
+├── .gitignore
+└── README.md
+
+This repository contains the full feature engineering workflow for the Amazon Electronics review dataset.
+
+- **components/** – Azure ML pipeline components responsible for individual feature transformations.
+- **data_assets/** – Registered Azure ML data assets used as pipeline inputs.
+- **datastores/** – Configuration for connecting Azure ML to the Azure Data Lake Storage container.
+- **feature_store/** – Feature Store entity definitions used for registering engineered features.
+- **pipelines/** – Azure ML pipeline definitions that orchestrate the feature engineering workflow.
+---
+
 ### Screenshots
 <img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/a57f4aa8-3d44-47be-91e5-9498f467d104" />
 <img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/6bb5a51f-abca-4d94-9eab-f0c1cbbe463e" />
@@ -375,17 +469,19 @@ Wrote the enriched dataset (original columns + `tokens`, `filtered_tokens`, `tf_
 
 **Azure ML datastore access to the curated data lake container was configured using a storage account key. The datastore was registered in the AML workspace to enable pipeline components to read the sampled Gold dataset from the curated container.**
 
-<img width="975" height="398" alt="image" src="https://github.com/user-attachments/assets/095765b2-18d2-493d-837c-abdb156bf339" />
-<img width="975" height="442" alt="image" src="https://github.com/user-attachments/assets/06d02322-22f4-422c-b1e0-b701d6b58c3f" />
-<img width="975" height="421" alt="image" src="https://github.com/user-attachments/assets/0270a223-70be-45db-9a44-7ba2e856178d" />
-<img width="975" height="367" alt="image" src="https://github.com/user-attachments/assets/78b109e9-e735-44ea-8e82-ffa64f455233" />
+<img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/095765b2-18d2-493d-837c-abdb156bf339" />
+<img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/06d02322-22f4-422c-b1e0-b701d6b58c3f" />
+<img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/0270a223-70be-45db-9a44-7ba2e856178d" />
+<img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/78b109e9-e735-44ea-8e82-ffa64f455233" />
+
 **Created a Feature Store entity named AmazonReview (v1) with index columns reviewerID and asin. This defines the primary keys used to join and retrieve features consistently in the Feature Store.**
 
 ---
 
 ### Pipeline Overview
 
-The Azure ML pipeline automates the feature engineering process using modular components. Each component performs a specific transformation and writes its output as a `uri_folder` artifact.
+The pipeline runs on an Azure ML CPU cluster configured for distributed batch processing.  
+Each pipeline component executes independently and passes outputs as `uri_folder` artifacts to downstream components.
 
 The pipeline processes the sampled dataset produced in Databricks and performs the following stages:
 
@@ -495,6 +591,22 @@ Benefits include:
 
 ---
 
+### Why Combine Multiple Feature Types?
+
+Different feature types capture different aspects of the review:
+
+| Feature Type | Captures |
+|---|---|
+| TF-IDF | Important words and phrases |
+| SBERT | Semantic meaning of text |
+| Sentiment | Emotional tone |
+| Length metrics | Reviewer behavior patterns |
+| Helpful votes | Social credibility |
+
+Combining these signals allows models to learn both **what the review says** and **how it is written**, improving predictive performance.
+
+---
+
 ### Pipeline DAG
 
 ```mermaid
@@ -522,6 +634,18 @@ graph TD
 ```bash
 az ml job create --file pipelines/feature_pipeline.yml
 ```
+---
+
+### Pipeline Execution
+
+The pipeline is executed using the Azure ML CLI:
+
+az ml job create --file pipelines/feature_pipeline.yml
+
+Each component runs on the configured compute cluster and writes outputs as URI folders, which are passed as inputs to downstream components. The final merged feature dataset is then registered in the Azure Feature Store.
+
+---
+
 ## All Features at a Glance
 
 | Feature | Source | What It Captures |
@@ -551,3 +675,7 @@ az ml job create --file pipelines/feature_pipeline.yml
 **Data leakage in feature engineering is subtle** — and much like O.D. somehow always knowing you haven't done the pre-lab reading before you even open your mouth, the model will always find a way to cheat if you give it the chance. It's not obvious that fitting a vectorizer on the full dataset before splitting is wrong — it feels like you're just building a vocabulary. But that vocabulary now encodes information from the test set, which invalidates your evaluation. Split first. Always.
 
 **Custom environments are part of real ML engineering.** VADER and sentence-transformers don't come pre-installed. Knowing when to write a `conda.yml` and what to put in it is a practical skill, not an afterthought.
+
+---
+### Words of Affirmation
+Survived? yes , Regreted not getting assassinated by iran? **HELL YEASS**
