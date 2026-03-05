@@ -507,8 +507,10 @@ The pipeline consumes the sampled dataset created in Databricks:
 This dataset contains ~300,000 reviews sampled using stratified sampling by year to prevent temporal drift. The dataset is registered in Azure ML as a Data Asset and passed into the pipeline as the `sampled_data` input.
 
 ### Components Built
+The Azure ML pipeline breaks feature engineering into modular components.
+Each component performs one transformation and outputs a dataset that becomes the input of the next step.
 
-The Azure ML pipeline breaks feature engineering into modular components, each responsible for one type of feature. The key design rule: **split the data first, before fitting anything.**
+This modular design allows features to be reused independently and simplifies debugging and pipeline maintenance.
 
 #### Why Split First?
 If you fit a TF-IDF vectorizer on the full dataset and then test on a "held-out" split, the model already saw that data through the vocabulary. The eval numbers become meaningless. Splitting first is the main leakage control.
@@ -628,6 +630,7 @@ graph TD
     H --> K
     I --> K
     J --> K
+    P --> K
     K --> L[Feature Store]
 ```
 
@@ -639,9 +642,9 @@ az ml job create --file pipelines/feature_pipeline.yml
 ### Pipeline Execution
 
 The pipeline is executed using the Azure ML CLI:
-
+```
 az ml job create --file pipelines/feature_pipeline.yml
-
+```
 Each component runs on the configured compute cluster and writes outputs as URI folders, which are passed as inputs to downstream components. The final merged feature dataset is then registered in the Azure Feature Store.
 
 ---
