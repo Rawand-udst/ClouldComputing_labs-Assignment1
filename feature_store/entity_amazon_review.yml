@@ -3,7 +3,7 @@ name: AmazonReview
 version: "1"
 description: Entity for Amazon review records
 index_columns:
-  - name: reviewerID
+  - name: reviewerID 
     type: string
   - name: asin
     type: string
