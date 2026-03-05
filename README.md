@@ -134,7 +134,7 @@ The rating percentage distribution shows that nearly 60% of reviews are 5-star, 
 **Why this matters for feature engineering:**
 This class imbalance affects how features will be learned by machine learning models. If not handled properly, engineered text features (such as TF-IDF vectors or embeddings) may primarily capture patterns from the dominant 5-star reviews, reducing model sensitivity to minority classes.
 
-*This justifies:*
+This justifies:
     •	Stratified sampling when creating subsets
     •	Balanced train/test splits
     •	Potential use of class weighting during model training
@@ -181,7 +181,7 @@ Review volume grows significantly year over year while average ratings stay flat
 **Why this matters for feature engineering:**
 Language usage, writing style, and review behavior may evolve over time. If feature engineering does not account for temporal distribution, models may unintentionally learn patterns specific to certain time periods.
 
-*This justifies:**
+This justifies:
     •	Time-aware sampling
     •	Ensuring the sample reflects multiple years
     •	Preventing temporal data drift from affecting feature extraction
@@ -365,6 +365,51 @@ Wrote the enriched dataset (original columns + `tokens`, `filtered_tokens`, `tf_
 
 ## Part 2 — Azure ML Pipeline
 
+### Screenshots
+<img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/a57f4aa8-3d44-47be-91e5-9498f467d104" />
+<img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/6bb5a51f-abca-4d94-9eab-f0c1cbbe463e" />
+<img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/83d429e4-453d-4f0f-a11d-85bc980261f7" />
+<img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/ef700d0b-6503-4542-9f35-fc5a800bc13b" />
+<img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/bcc850c1-ace3-494b-971f-219c7fa76c87" />
+<img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/2317f27d-f343-47bd-90f9-7d26e5b46ecb" />
+
+**Azure ML datastore access to the curated data lake container was configured using a storage account key. The datastore was registered in the AML workspace to enable pipeline components to read the sampled Gold dataset from the curated container.**
+
+<img width="975" height="398" alt="image" src="https://github.com/user-attachments/assets/095765b2-18d2-493d-837c-abdb156bf339" />
+<img width="975" height="442" alt="image" src="https://github.com/user-attachments/assets/06d02322-22f4-422c-b1e0-b701d6b58c3f" />
+<img width="975" height="421" alt="image" src="https://github.com/user-attachments/assets/0270a223-70be-45db-9a44-7ba2e856178d" />
+<img width="975" height="367" alt="image" src="https://github.com/user-attachments/assets/78b109e9-e735-44ea-8e82-ffa64f455233" />
+**Created a Feature Store entity named AmazonReview (v1) with index columns reviewerID and asin. This defines the primary keys used to join and retrieve features consistently in the Feature Store.**
+
+---
+
+### Pipeline Overview
+
+The Azure ML pipeline automates the feature engineering process using modular components. Each component performs a specific transformation and writes its output as a `uri_folder` artifact.
+
+The pipeline processes the sampled dataset produced in Databricks and performs the following stages:
+
+1. Split the dataset into train, validation, and test sets
+2. Normalize text inputs
+3. Generate multiple feature types:
+   - Length-based features
+   - Sentiment features
+   - TF-IDF vectors
+   - SBERT embeddings
+   - Helpful vote features
+   - Readability features
+4. Merge all engineered features into a final dataset
+5. Register the output dataset in the Azure Feature Store
+   
+
+### Pipeline Input Dataset
+
+The pipeline consumes the sampled dataset created in Databricks:
+
+`amazon_electronics_features_v1_sampled`
+
+This dataset contains ~300,000 reviews sampled using stratified sampling by year to prevent temporal drift. The dataset is registered in Azure ML as a Data Asset and passed into the pipeline as the `sampled_data` input.
+
 ### Components Built
 
 The Azure ML pipeline breaks feature engineering into modular components, each responsible for one type of feature. The key design rule: **split the data first, before fitting anything.**
@@ -372,10 +417,22 @@ The Azure ML pipeline breaks feature engineering into modular components, each r
 #### Why Split First?
 If you fit a TF-IDF vectorizer on the full dataset and then test on a "held-out" split, the model already saw that data through the vocabulary. The eval numbers become meaningless. Splitting first is the main leakage control.
 
+### split_dataset component
+
+The first component splits the dataset into three subsets:
+
+| Split | Purpose |
+|------|------|
+| Train | Used to fit TF-IDF and embedding models |
+| Validation | Used to tune model parameters |
+| Test | Used for final evaluation |
+
+Splitting occurs before feature fitting to prevent data leakage. Components that require fitting (such as TF-IDF) use only the training split.
+
 ---
 
 #### `normalize_text`
-Lowercasing, URL/number token replacement (regex), punctuation removal, whitespace collapsing, short review filtering (<10 chars). Runs in parallel on train, val, and test — no dependencies between the three.
+Lowercasing, URL/number token replacement (regex), punctuation removal, whitespace collapsing, short review filtering (<10 chars). Runs in parallel on train, val, and test — no dependencies between the three.This ensures consistent input for downstream NLP components such as TF-IDF vectorization and reduces noise in the feature space.
 
 #### `length_features`
 `review_length_words` and `review_length_chars`. Motivated directly by the EDA finding that mid-range ratings correlate with longer reviews.
@@ -416,7 +473,25 @@ Computes structural text features from `reviewText` using regex-based parsing (n
 These capture how structured and verbose a review is — things like whether someone wrote one long run-on sentence or several short punchy ones. Longer, more structured reviews may reflect more analytical reviewers, which can correlate with rating behavior.
 
 #### `merge_features`
-Joins all feature outputs on `asin` + `reviewerID` into a single `data.parquet` for Feature Store registration.
+After all feature engineering components completed, their outputs were merged into a single dataset.
+The merge component takes as input the outputs from:
+- Review length features
+- Sentiment features
+- TF-IDF features
+- Semantic embedding features
+- Additional engineered features (helpful votes, readability metrics)
+All datasets are joined using the entity keys **asin** and **reviewerID**, ensuring that features correspond to the same review instance.
+The resulting dataset contains all engineered features combined into one unified feature table.
+
+### Feature Store Registration
+
+The merged feature dataset is registered in the Azure Feature Store. The Feature Store allows engineered features to be reused across multiple ML workflows without recomputing them.
+
+Benefits include:
+
+- centralized feature management
+- consistent feature definitions across models
+- easier reproducibility and governance
 
 ---
 
