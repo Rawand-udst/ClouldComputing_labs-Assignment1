@@ -653,11 +653,11 @@ Each component runs on the configured compute cluster and writes outputs as URI 
 
 | Feature | Source | What It Captures |
 |---|---|---|
-| `review_length_words` | Length component | Verbosity — correlated with rating from EDA |
-| `review_length_chars` | Length component | Character-level length signal |
+| `review_length_words` | review_length component | Verbosity — correlated with rating from EDA |
+| `review_length_chars` | review_length component | Character-level length signal |
 | `sentiment_pos/neg/neu` | VADER | Emotional breakdown of review text |
 | `sentiment_compound` | VADER | Overall polarity (−1 to +1) |
-| TF-IDF weights (10k) | TF-IDF component | Word/phrase frequency and importance |
+| TF-IDF weights (5k) | TF-IDF component | Word/phrase frequency and importance |
 | SBERT vectors (384d) | SBERT component | Semantic meaning, handles synonyms |
 | `word_count`, `char_count` | readability_features | Verbosity and length |
 | `avg_word_len`, `avg_sentence_len_words` | readability_features | Writing complexity and structure |
