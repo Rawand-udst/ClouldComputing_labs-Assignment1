@@ -104,7 +104,7 @@ def main():
 
     os.makedirs(args.out, exist_ok=True)
     out_path = os.path.join(args.out, "data.parquet")
-    df.to_parquet(out_path, index=False)
+    df.to_parquet(out_path, index=False)  
 
     print("✅ FINAL rows:", len(df))
     print("✅ FINAL cols:", len(df.columns))
