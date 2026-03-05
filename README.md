@@ -5,7 +5,7 @@
 
 The goal was to take the raw Amazon Electronics reviews dataset (Gold layer) and engineer meaningful ML features from the text. Raw text can't go into a model — it needs to be turned into numbers. This lab covers the full journey: exploring the data in Databricks, understanding its characteristics, creating a clean sample, building text features step by step, and then packaging everything into a proper Azure ML Pipeline that registers features in the Feature Store. This was all assigned by O.D., who described it as "straightforward" — a word that, upon reflection, must mean something completely different in his native language.
 
-<img width="315" height="247" alt="image" src="https://github.com/user-attachments/assets/5d4e0cee-447c-482b-b8aa-3f1f2b359b94" />
+<img width="915" height="447" alt="image" src="https://github.com/user-attachments/assets/5d4e0cee-447c-482b-b8aa-3f1f2b359b94" />
 
 ---
 
@@ -48,10 +48,12 @@ This separation allows scalable preprocessing in Spark while keeping feature eng
 ---
 
 ## Part 1 — Databricks Notebook
+
 <img width="303" height="174" alt="image" src="https://github.com/user-attachments/assets/74175a6f-eedd-4351-893e-a5f2839a4665" />
 (When i heard Databricks for the first time)
 
 ### Step 1 — Load the Dataset
+
 ![66ea7edd-1acd-470a-9f6e-74156d6f45e4_text](https://github.com/user-attachments/assets/38489700-d877-4041-98f4-b297ac1cad60)
 (how's i imagine u if i didn't do this step)
 
@@ -126,6 +128,7 @@ No nulls or empty strings found — safe to proceed with feature extraction.
 ---
 
 ### Step 4 — Visualizations & What I Learned
+
 ![7c88f00c-82df-4349-8645-d4b6fb12d14a_text](https://github.com/user-attachments/assets/2ed4892e-def9-45ae-ab38-da82ed13be51)
 (JK i learned a lot OFC)
 
@@ -164,6 +167,7 @@ Most reviews are short — heavy right skew with a long tail of outliers. The fi
 ---
 
 #### Rating Percentage + Imbalance Ratio (Bonus)
+
 ![greys-anatomy-jo-wilson](https://github.com/user-attachments/assets/25307b9f-045c-4ddb-94ce-0319baedf6a9)
 (I deserve extra point come om)
 
@@ -288,7 +292,7 @@ display(orig_dist.join(samp_dist, on="overall", how="outer").orderBy("overall"))
 Rating proportions in the sample matched the full dataset closely. Exact counts don't need to match — proportional similarity is what matters. The check confirmed the sample is representative.
 
 ![poiised-me-looking-for-my-sanity](https://github.com/user-attachments/assets/931f5ed5-1bd7-4428-91ea-337a5c40502b)
-(Me looking for my Sanity after everything i did)
+(looking for my Sanity at this point)
 ---
 
 ### Step 7 — Text Feature Engineering in Spark ML
@@ -372,6 +376,7 @@ Applies inverse document frequency on top of the term-frequency vectors. Words t
 ---
 
 ### Step 8 — Full Spark ML Pipeline
+
 ![pipes-bursting](https://github.com/user-attachments/assets/1b5e71a9-1615-4f62-900f-f32b842c11a9)
 (how my proccess went with the pipeline)
 
@@ -476,6 +481,7 @@ This repository contains the full feature engineering workflow for the Amazon El
 ---
 
 ### Screenshots
+
 ![pick-your-waifu-waifu](https://github.com/user-attachments/assets/bdbcfb4e-cb4a-45fd-acb5-879f681cb6fe)
 
 <img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/a57f4aa8-3d44-47be-91e5-9498f467d104" />
