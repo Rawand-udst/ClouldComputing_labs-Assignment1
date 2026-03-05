@@ -1,15 +1,9 @@
 # Lab 4 — Text Feature Engineering with Azure ML
-IK it's not completed yet i didn't commit my file to github yet cuz i'm having trouble with my laptop storage sry i'll fix it asap 
 ---
 
 ## What This Lab Is About
 
 The goal was to take the raw Amazon Electronics reviews dataset (Gold layer) and engineer meaningful ML features from the text. Raw text can't go into a model — it needs to be turned into numbers. This lab covers the full journey: exploring the data in Databricks, understanding its characteristics, creating a clean sample, building text features step by step, and then packaging everything into a proper Azure ML Pipeline that registers features in the Feature Store. This was all assigned by O.D., who described it as "straightforward" — a word that, upon reflection, must mean something completely different in his native language.
-
----
-
-## Repository Structure
-[screenshot]
 
 ---
 
@@ -95,6 +89,7 @@ No nulls or empty strings found — safe to proceed with feature extraction.
 rating_counts = df.groupBy("overall").count().orderBy("overall")
 display(rating_counts)
 ```
+<img width="762" height="700" alt="image" src="https://github.com/user-attachments/assets/1f1b17f7-729e-49ca-83b9-640cbe93642e" />
 
 ~59–60% of reviews are 5-star. 4-star follows at ~20%. Ratings 1–3 are a small minority.
 
@@ -112,6 +107,9 @@ display(length_df.select("review_length"))
 length_filtered = length_df.filter(F.col("review_length") < 2000)
 display(length_filtered.select("review_length"))
 ```
+<img width="718" height="702" alt="image" src="https://github.com/user-attachments/assets/8253a14f-a0d8-4545-90f5-d7fdbe62158b" />
+
+<img width="724" height="686" alt="image" src="https://github.com/user-attachments/assets/5ab0331d-01fe-496b-b548-497b47d5c820" />
 
 Most reviews are short — heavy right skew with a long tail of outliers. The filter at 2000 characters made the distribution readable by dropping extreme outliers from the visualization without removing them from the data.
 
@@ -131,7 +129,15 @@ min_pct = rating_pct.agg(F.min("percent")).collect()[0][0]
 print("Imbalance ratio:", round(max_pct / min_pct, 2))  # ~12.0
 ```
 
-The 5-star to 1-star imbalance ratio came out at approximately **12:1**. Visualizing this explicitly made the scale of the problem concrete.
+The rating percentage distribution shows that nearly 60% of reviews are 5-star, while lower ratings occur much less frequently. The imbalance ratio **(~12:1)** indicates that the majority class is significantly more common than the minority class.
+
+**Why this matters for feature engineering:**
+This class imbalance affects how features will be learned by machine learning models. If not handled properly, engineered text features (such as TF-IDF vectors or embeddings) may primarily capture patterns from the dominant 5-star reviews, reducing model sensitivity to minority classes.
+
+*This justifies:*
+    •	Stratified sampling when creating subsets
+    •	Balanced train/test splits
+    •	Potential use of class weighting during model training
 
 ---
 
@@ -146,10 +152,13 @@ length_by_rating = length_df.groupBy("overall") \
 
 display(length_by_rating)
 ```
+<img width="724" height="709" alt="image" src="https://github.com/user-attachments/assets/f5a4c10d-8cc1-44c2-9fad-c6f9fd4976e7" />
 
 Mid-range ratings (2–4 stars) have longer reviews on average. 5-star reviews are notably shorter.
 
 **What I learned:** People who are conflicted or dissatisfied write more. This correlation confirms that word count and character count are worth including as standalone features — they carry predictive information beyond just being metadata.
+
+May provide predictive information. Including length-based features can help models capture behavioral differences across rating classes, improving classification performance.
 
 ---
 
@@ -163,16 +172,33 @@ rating_year = df.groupBy("review_year") \
 
 display(rating_year)
 ```
+<img width="689" height="704" alt="image" src="https://github.com/user-attachments/assets/329196ce-79d7-4c9e-b30a-8ab2fed7f62f" />
 
 Review volume grows significantly year over year while average ratings stay flat.
 
 **What I learned:** The dataset is temporally imbalanced — more recent years have way more reviews. A naive random sample would over-represent recent language patterns. This directly motivated the stratified sampling approach.
+
+**Why this matters for feature engineering:**
+Language usage, writing style, and review behavior may evolve over time. If feature engineering does not account for temporal distribution, models may unintentionally learn patterns specific to certain time periods.
+
+*This justifies:**
+    •	Time-aware sampling
+    •	Ensuring the sample reflects multiple years
+    •	Preventing temporal data drift from affecting feature extraction
 
 ---
 
 ### Step 5 — Stratified Sampling by Year (Drift Resistance)
 
 The lab question was: *"Language evolves over the years. How would you ensure your sampling is resistant to drift?"*
+
+**What does “resistant to drift” mean?**
+It means:
+    •	We should NOT randomly sample the whole dataset.
+    •	That could over-represent recent years (which have more reviews).
+    •	Language evolves over time.
+    •	We want proportional representation across years.
+
 
 First checked whether `review_year` existed as a column:
 
@@ -333,18 +359,11 @@ display(check.select("reviewText", "tfidf_features").limit(5))
 
 Wrote the enriched dataset (original columns + `tokens`, `filtered_tokens`, `tf_features`, `tfidf_features`) back to the Gold layer. Read it back to verify rows and output shape.
 
+<img width="975" height="434" alt="image" src="https://github.com/user-attachments/assets/d20e422a-37ab-47e3-8d7a-a2babe8420b8" />
+
 ---
 
 ## Part 2 — Azure ML Pipeline
-
-### Setup Steps
-
-- Registered the curated ADLS container as a datastore in Azure ML using a storage account key
-- Registered the 300k stratified sample as an Azure ML Data Asset (`amazon_electronics_features_v1_sampled@1`)
-- Created a Feature Store (`amazon-electronics-fs-6XXXXX`)
-- Created a Feature Store entity `AmazonReview (v1)` with index columns `asin` and `reviewerID`
-
----
 
 ### Components Built
 
@@ -370,9 +389,31 @@ VADER scores: `sentiment_pos`, `sentiment_neg`, `sentiment_neu`, `sentiment_comp
 #### `sbert_embeddings`
 `all-MiniLM-L6-v2` → 384-dimensional dense vectors per review. Captures semantic meaning that TF-IDF misses — "great product" and "excellent item" land near each other in embedding space.
 
-#### `additional_features` (Bonus)
-- Readability: sentence count, avg word/sentence length
-- Helpful votes: `helpful_votes`, `total_votes`, `helpful_ratio`
+#### `helpful_features` (Bonus)
+
+Extracts vote-based signals from the `helpful` column, which is stored as an array `[helpful_votes, total_votes]`. The script unpacks it safely — if the array is malformed or missing it defaults to `[0, 0]` — and computes three features:
+
+| Feature | Description |
+|---|---|
+| `helpful_votes` | Number of people who marked the review as helpful |
+| `total_votes` | Total votes received |
+| `helpful_ratio` | `helpful_votes / total_votes` (denominator replaced with 1 when zero to avoid division errors) |
+
+This is a non-text signal that adds a social credibility dimension — reviews that many people found useful likely have different characteristics than reviews nobody bothered to vote on.
+
+#### `readability_features` (Bonus)
+
+Computes structural text features from `reviewText` using regex-based parsing (no external NLP libraries needed):
+
+| Feature | How It's Computed |
+|---|---|
+| `word_count` | `re.findall(r"\b\w+\b", text)` — counts all word tokens |
+| `char_count` | `str.len()` on the raw review text |
+| `avg_word_len` | Total characters across all words divided by word count |
+| `sentence_count` | Splits on `[.!?]+` and counts non-empty segments |
+| `avg_sentence_len_words` | `word_count / sentence_count` (denominator replaced with 1 when zero) |
+
+These capture how structured and verbose a review is — things like whether someone wrote one long run-on sentence or several short punchy ones. Longer, more structured reviews may reflect more analytical reviewers, which can correlate with rating behavior.
 
 #### `merge_features`
 Joins all feature outputs on `asin` + `reviewerID` into a single `data.parquet` for Feature Store registration.
@@ -393,7 +434,8 @@ graph TD
     D --> H
     E --> H
     C --> I[sbert_train]
-    C --> J[additional_train]
+    C --> J[helpful_train]
+    C --> P[readability_train]
     F --> K[merge_all]
     G --> K
     H --> K
@@ -405,7 +447,23 @@ graph TD
 ```bash
 az ml job create --file pipelines/feature_pipeline.yml
 ```
+## All Features at a Glance
 
+| Feature | Source | What It Captures |
+|---|---|---|
+| `review_length_words` | Length component | Verbosity — correlated with rating from EDA |
+| `review_length_chars` | Length component | Character-level length signal |
+| `sentiment_pos/neg/neu` | VADER | Emotional breakdown of review text |
+| `sentiment_compound` | VADER | Overall polarity (−1 to +1) |
+| TF-IDF weights (10k) | TF-IDF component | Word/phrase frequency and importance |
+| SBERT vectors (384d) | SBERT component | Semantic meaning, handles synonyms |
+| `word_count`, `char_count` | readability_features | Verbosity and length |
+| `avg_word_len`, `avg_sentence_len_words` | readability_features | Writing complexity and structure |
+| `sentence_count` | readability_features | How many sentences the review contains |
+| `helpful_votes`, `total_votes` | helpful_features | Raw vote counts |
+| `helpful_ratio` | helpful_features | Social credibility — non-text signal |
+
+---
 
 ## Key Things I Learned
 
