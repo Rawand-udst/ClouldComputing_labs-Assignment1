@@ -5,6 +5,8 @@
 
 The goal was to take the raw Amazon Electronics reviews dataset (Gold layer) and engineer meaningful ML features from the text. Raw text can't go into a model — it needs to be turned into numbers. This lab covers the full journey: exploring the data in Databricks, understanding its characteristics, creating a clean sample, building text features step by step, and then packaging everything into a proper Azure ML Pipeline that registers features in the Feature Store. This was all assigned by O.D., who described it as "straightforward" — a word that, upon reflection, must mean something completely different in his native language.
 
+<img width="315" height="247" alt="image" src="https://github.com/user-attachments/assets/5d4e0cee-447c-482b-b8aa-3f1f2b359b94" />
+
 ---
 
 ## Dataset Description
@@ -27,7 +29,7 @@ The dataset contains **40M+ reviews**, making distributed processing necessary f
 
 ---
 
-## Project Architecture
+## Architecture
 
 The feature engineering workflow spans two environments:
 
@@ -41,11 +43,17 @@ The feature engineering workflow spans two environments:
 
 This separation allows scalable preprocessing in Spark while keeping feature engineering modular and reproducible in Azure ML.
 
+![unlimited-workflows](https://github.com/user-attachments/assets/d6912b7d-3655-4a1b-baf6-722faea68770)
+(before getting cloned)
 ---
 
 ## Part 1 — Databricks Notebook
+<img width="303" height="174" alt="image" src="https://github.com/user-attachments/assets/74175a6f-eedd-4351-893e-a5f2839a4665" />
+(When i heard Databricks for the first time)
 
 ### Step 1 — Load the Dataset
+![66ea7edd-1acd-470a-9f6e-74156d6f45e4_text](https://github.com/user-attachments/assets/38489700-d877-4041-98f4-b297ac1cad60)
+(how's i imagine u if i didn't do this step)
 
 Connected to Azure Data Lake Storage using the storage account key, then read the Gold layer Parquet files:
 
@@ -118,6 +126,8 @@ No nulls or empty strings found — safe to proceed with feature extraction.
 ---
 
 ### Step 4 — Visualizations & What I Learned
+![7c88f00c-82df-4349-8645-d4b6fb12d14a_text](https://github.com/user-attachments/assets/2ed4892e-def9-45ae-ab38-da82ed13be51)
+(JK i learned a lot OFC)
 
 #### Rating Distribution
 
@@ -154,6 +164,8 @@ Most reviews are short — heavy right skew with a long tail of outliers. The fi
 ---
 
 #### Rating Percentage + Imbalance Ratio (Bonus)
+![greys-anatomy-jo-wilson](https://github.com/user-attachments/assets/25307b9f-045c-4ddb-94ce-0319baedf6a9)
+(I deserve extra point come om)
 
 ```python
 total = df.count()
@@ -275,6 +287,8 @@ display(orig_dist.join(samp_dist, on="overall", how="outer").orderBy("overall"))
 
 Rating proportions in the sample matched the full dataset closely. Exact counts don't need to match — proportional similarity is what matters. The check confirmed the sample is representative.
 
+![poiised-me-looking-for-my-sanity](https://github.com/user-attachments/assets/931f5ed5-1bd7-4428-91ea-337a5c40502b)
+(Me looking for my Sanity after everything i did)
 ---
 
 ### Step 7 — Text Feature Engineering in Spark ML
@@ -358,6 +372,8 @@ Applies inverse document frequency on top of the term-frequency vectors. Words t
 ---
 
 ### Step 8 — Full Spark ML Pipeline
+![pipes-bursting](https://github.com/user-attachments/assets/1b5e71a9-1615-4f62-900f-f32b842c11a9)
+(how my proccess went with the pipeline)
 
 Packaged all the steps above into a single reproducible Spark ML Pipeline:
 
@@ -460,6 +476,8 @@ This repository contains the full feature engineering workflow for the Amazon El
 ---
 
 ### Screenshots
+![pick-your-waifu-waifu](https://github.com/user-attachments/assets/bdbcfb4e-cb4a-45fd-acb5-879f681cb6fe)
+
 <img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/a57f4aa8-3d44-47be-91e5-9498f467d104" />
 <img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/6bb5a51f-abca-4d94-9eab-f0c1cbbe463e" />
 <img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/83d429e4-453d-4f0f-a11d-85bc980261f7" />
@@ -526,7 +544,8 @@ The first component splits the dataset into three subsets:
 | Test | Used for final evaluation |
 
 Splitting occurs before feature fitting to prevent data leakage. Components that require fitting (such as TF-IDF) use only the training split.
-
+![6ej55X](https://github.com/user-attachments/assets/2a75d777-fa52-4c1a-9227-7dd6b4a847c3)
+(uni using split on me be like)
 ---
 
 #### `normalize_text`
@@ -610,6 +629,7 @@ Combining these signals allows models to learn both **what the review says** and
 ---
 
 ### Pipeline DAG
+![9c6036872d32db27c82c47c8a5657777](https://github.com/user-attachments/assets/8d956f09-609c-4e1e-b034-edc648f37cf1)
 
 ```mermaid
 graph TD
@@ -682,3 +702,6 @@ Each component runs on the configured compute cluster and writes outputs as URI 
 ---
 ### Words of Affirmation
 Survived? yes , Regreted not getting assassinated by iran? **HELL YEASS**
+
+<img width="1200" height="738" alt="image" src="https://github.com/user-attachments/assets/e149ec68-a3ef-4a66-ba1f-1184e5c61b6c" />
+
