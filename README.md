@@ -402,7 +402,7 @@ Wrote the enriched dataset (original columns + `tokens`, `filtered_tokens`, `tf_
 ## Part 2 — Azure ML Pipeline
 
 ### Repository Structure
-
+```
 .
 ├── components/
 │   ├── split_dataset/
@@ -449,7 +449,7 @@ Wrote the enriched dataset (original columns + `tokens`, `filtered_tokens`, `tf_
 │
 ├── .gitignore
 └── README.md
-
+```
 This repository contains the full feature engineering workflow for the Amazon Electronics review dataset.
 
 - **components/** – Azure ML pipeline components responsible for individual feature transformations.
