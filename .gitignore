@@ -1,0 +1,3 @@
+out/
+datastores/curated_adls.yml
+datastores/raw_adls.yml
