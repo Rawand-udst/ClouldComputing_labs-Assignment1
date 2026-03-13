@@ -1,0 +1,79 @@
+$schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+
+type: pipeline
+experiment_name: lab5_predictive_maintenance
+
+settings:
+  default_compute: cpu-cluster-BIG-60304948
+
+inputs:
+  train_data:
+    type: uri_file
+    path: azureml:train_fd001@latest
+  test_data:
+    type: uri_file
+    path: azureml:test_fd001@latest
+  rul_data:
+    type: uri_file
+    path: azureml:rul_fd001@latest
+
+jobs:
+  split:
+    type: command
+    component: azureml:split_dataset@latest
+    inputs:
+      train_data: ${{parent.inputs.train_data}}
+      test_data: ${{parent.inputs.test_data}}
+      rul_data: ${{parent.inputs.rul_data}}
+      sample_engines: 40
+      seed: 42
+
+  enrich_rul:
+    type: command
+    component: azureml:normalize_text@latest
+    inputs:
+      train_data: ${{parent.jobs.split.outputs.train_out}}
+      test_data: ${{parent.jobs.split.outputs.test_out}}
+      rul_data: ${{parent.jobs.split.outputs.rul_out}}
+
+  tsfresh_features:
+    type: command
+    component: azureml:semantic_embeddings@latest
+    inputs:
+      train_data: ${{parent.jobs.enrich_rul.outputs.train_out}}
+
+  filter_features:
+    type: command
+    component: azureml:tfidf_features@latest
+    inputs:
+      data: ${{parent.jobs.tsfresh_features.outputs.out}}
+      top_k: 20
+      mi_sample_size: 40
+
+  summary_features:
+    type: command
+    component: azureml:review_length@latest
+    inputs:
+      data: ${{parent.jobs.enrich_rul.outputs.train_out}}
+
+  trend_features:
+    type: command
+    component: azureml:helpfulness_ratio@latest
+    inputs:
+      data: ${{parent.jobs.enrich_rul.outputs.train_out}}
+
+  merge_all:
+    type: command
+    component: azureml:merge_features@latest
+    inputs:
+      filtered_features: ${{parent.jobs.filter_features.outputs.out}}
+      summary_features: ${{parent.jobs.summary_features.outputs.out}}
+      trend_features: ${{parent.jobs.trend_features.outputs.out}}
+
+  train_models:
+    type: command
+    component: azureml:sentiment@latest
+    inputs:
+      data: ${{parent.jobs.merge_all.outputs.out}}
+      population_size: 12
+      generations: 6
