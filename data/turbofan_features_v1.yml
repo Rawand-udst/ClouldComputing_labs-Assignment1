@@ -1,0 +1,7 @@
+$schema: https://azuremlschemas.azureedge.net/latest/data.schema.json
+
+name: turbofan_features_v1
+version: 1
+type: uri_folder
+path: azureml://datastores/blobkey/paths/lab5_turbofan/features_v1/
+description: Turbofan feature dataset used as input for the Lab 5 predictive maintenance pipeline

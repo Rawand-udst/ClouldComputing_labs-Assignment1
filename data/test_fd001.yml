@@ -1,0 +1,7 @@
+$schema: https://azuremlschemas.azureedge.net/latest/data.schema.json
+
+name: test_fd001
+version: 1
+type: uri_file
+path: azureml://datastores/rawblob/paths/lab5_turbofan/test_FD001.txt
+description: FD001 test file for turbofan predictive maintenance
