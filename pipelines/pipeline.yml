@@ -4,7 +4,7 @@ type: pipeline
 experiment_name: lab5_predictive_maintenance
 
 settings:
-  default_compute: cpu-cluster-BIG-60304948
+  default_compute: azureml:cpu-cluster-BIG-60304948
 
 inputs:
   train_data:
