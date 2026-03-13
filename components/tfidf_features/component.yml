@@ -1,0 +1,29 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+
+name: tfidf_features
+display_name: Filter Features
+type: command
+
+inputs:
+  data:
+    type: uri_folder
+  top_k:
+    type: integer
+    default: 20
+  mi_sample_size:
+    type: integer
+    default: 40
+
+outputs:
+  out:
+    type: uri_folder
+
+code: .
+command: >
+  python tfidf.py
+  --data ${{inputs.data}}
+  --top_k ${{inputs.top_k}}
+  --mi_sample_size ${{inputs.mi_sample_size}}
+  --out ${{outputs.out}}
+
+environment: azureml:AzureML-sklearn-1.1-ubuntu20.04-py38-cpu@latest

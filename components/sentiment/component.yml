@@ -1,0 +1,32 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+
+name: sentiment
+display_name: DEAP And Model Training
+type: command
+
+inputs:
+  data:
+    type: uri_folder
+  population_size:
+    type: integer
+    default: 12
+  generations:
+    type: integer
+    default: 6
+
+outputs:
+  results_out:
+    type: uri_folder
+  features_out:
+    type: uri_folder
+
+code: .
+command: >
+  python sentiment.py
+  --data ${{inputs.data}}
+  --population_size ${{inputs.population_size}}
+  --generations ${{inputs.generations}}
+  --results_out ${{outputs.results_out}}
+  --features_out ${{outputs.features_out}}
+
+environment: azureml:deap-xgb-env:1

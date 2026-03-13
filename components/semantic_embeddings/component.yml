@@ -1,0 +1,21 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+
+name: semantic_embeddings
+display_name: Extract TSFresh Features
+type: command
+
+inputs:
+  train_data:
+    type: uri_folder
+
+outputs:
+  out:
+    type: uri_folder
+
+code: .
+command: >
+  python semantic_embeddings.py
+  --train_data ${{inputs.train_data}}
+  --out ${{outputs.out}}
+
+environment: azureml:tsfresh-env:1

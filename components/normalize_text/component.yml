@@ -1,0 +1,33 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+
+name: normalize_text
+display_name: Create RUL Labels
+type: command
+
+inputs:
+  train_data:
+    type: uri_folder
+  test_data:
+    type: uri_folder
+  rul_data:
+    type: uri_folder
+
+outputs:
+  train_out:
+    type: uri_folder
+  test_out:
+    type: uri_folder
+  rul_out:
+    type: uri_folder
+
+code: .
+command: >
+  python normalize.py
+  --train_data ${{inputs.train_data}}
+  --test_data ${{inputs.test_data}}
+  --rul_data ${{inputs.rul_data}}
+  --train_out ${{outputs.train_out}}
+  --test_out ${{outputs.test_out}}
+  --rul_out ${{outputs.rul_out}}
+
+environment: azureml:AzureML-sklearn-1.1-ubuntu20.04-py38-cpu@latest

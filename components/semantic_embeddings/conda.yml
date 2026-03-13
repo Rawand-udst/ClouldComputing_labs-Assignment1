@@ -1,0 +1,13 @@
+name: tsfresh-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - pip
+  - pip:
+      - pandas
+      - numpy
+      - pyarrow
+      - tsfresh
+      - scikit-learn

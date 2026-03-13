@@ -1,0 +1,14 @@
+name: deap-xgb-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - pip
+  - pip:
+      - pandas
+      - numpy
+      - pyarrow
+      - scikit-learn
+      - deap
+      - xgboost

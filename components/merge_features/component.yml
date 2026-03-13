@@ -1,0 +1,27 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+
+name: merge_features
+display_name: Merge All Feature Tables
+type: command
+
+inputs:
+  filtered_features:
+    type: uri_folder
+  summary_features:
+    type: uri_folder
+  trend_features:
+    type: uri_folder
+
+outputs:
+  out:
+    type: uri_folder
+
+code: .
+command: >
+  python merge_features.py
+  --filtered_features ${{inputs.filtered_features}}
+  --summary_features ${{inputs.summary_features}}
+  --trend_features ${{inputs.trend_features}}
+  --out ${{outputs.out}}
+
+environment: azureml:AzureML-sklearn-1.1-ubuntu20.04-py38-cpu@latest
