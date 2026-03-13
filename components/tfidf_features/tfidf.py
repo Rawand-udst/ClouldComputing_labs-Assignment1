@@ -45,11 +45,10 @@ def main():
     y_sample = y.loc[X_corr_sample.index]
 
     mi_scores = mutual_info_regression(
-        X_corr_sample,
-        y_sample,
-        random_state=42,
-        n_jobs=-1
-    )
+    X_corr_sample,
+    y_sample,
+    random_state=42
+)
 
     mi_series = pd.Series(mi_scores, index=X_corr.columns).sort_values(ascending=False)
     selected_mi_cols = mi_series.head(args.top_k).index.tolist()
