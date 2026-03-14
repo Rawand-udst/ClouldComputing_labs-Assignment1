@@ -28,9 +28,9 @@ NASA was kind enough to simulate engines degrading to death so we don't have to 
 
 ---
 
-## Architecture
+## Pipeline Architecture
 
-The full pipeline runs across two environments:
+The full pipeline runs across two environments, with all components orchestrated end-to-end through Azure ML via `pipeline.yml`:
 
 | Stage | Platform | Purpose |
 |---|---|---|
@@ -353,9 +353,9 @@ models = {
 
 | Model | RMSE | MAE | R² | Selected Features |
 |---|---|---|---|---|
-| **Gradient Boosting** | **~3.0** | **~1.86** | **0.995** | 20 |
-| Random Forest | — | — | — | 20 |
-| XGBoost | — | — | — | 20 |
+| Random Forest | 7.761 | 4.933 | 0.965 | 20 |
+| **Gradient Boosting** | **2.999** | **1.860** | **0.995** | 20 |
+| XGBoost | 10.774 | 7.690 | 0.933 | 20 |
 
 **Gradient Boosting achieved an R² of 0.995** — explaining 99.5% of the variance in RUL. The entire pipeline distilled 21 raw sensors across hundreds of time-steps into 20 features that almost perfectly predict how much life an engine has left. I stared at that number for a while. Then I checked three times that I hadn't leaked the target. I hadn't. It's just genuinely that good on FD001.
 
@@ -364,6 +364,17 @@ Results and the final feature set were saved back to the Gold layer:
 gold_final_path = "abfss://curated@amazondatalake60304948.dfs.core.windows.net/lab5_turbofan/final_dataset/"
 spark.createDataFrame(final_dataset).write.mode("overwrite").parquet(gold_final_path)
 ```
+
+---
+
+## Pipeline Runtime
+
+The full Azure ML pipeline ran in approximately **~8 minutes** on `cpu-cluster-BIG-60304948`. Two decisions directly contributed to keeping that number reasonable:
+
+- **`MinimalFCParameters`** — instead of tsfresh's full parameter set (750+ features, would have taken significantly longer), the minimal set computes only the essential statistics per signal and finishes in a fraction of the time.
+- **Parallel processing via `n_jobs`** — both the mutual information step (`n_jobs=-1`) and the Random Forest inside the GA fitness function (`n_jobs=-1`) use all available cores. The GA runs 10 generations × 12 individuals × 3-fold CV, so parallelism here is not optional — it's what makes the runtime tolerable.
+
+This directly addresses the assignment requirement to measure and optimize pipeline runtime. The total end-to-end time was tracked using `time.time()` at the start and end of the notebook and printed as the final output.
 
 ---
 
@@ -558,6 +569,8 @@ az ml job create --file pipelines/pipeline.yml
 **I learned that the Bronze → Silver → Gold pattern is actually useful, not just bureaucracy.** Having cleaned Parquet in the Silver layer meant I never had to re-parse the raw text files again. Having labeled data in Gold meant the feature extraction step could start cleanly every time without re-running the RUL computation. When I had to re-run parts of the pipeline, each layer was independently resumable. It felt like unnecessary overhead until the third time I restarted mid-pipeline and didn't lose my progress.
 
 **I learned that R²=0.995 on FD001 should make you suspicious, then relieved.** The first time I saw that number I immediately went back and checked for data leakage. Then checked again. Then asked myself if maybe I'd accidentally included `max_cycle` as a feature (which would directly give away RUL). I hadn't. FD001 is just a clean, single-condition dataset with very consistent degradation patterns — it's designed to be solvable. The number is real, it just reflects the simplicity of the task more than the genius of the model.
+
+---
 
 ---
 
