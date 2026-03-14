@@ -421,19 +421,26 @@ spark.createDataFrame(final_dataset).write.mode("overwrite").parquet(gold_final_
 
 ## Pipeline DAG
 
+Here's the actual Azure ML pipeline run — all green, all completed, no components on fire:
+
+<!-- Replace the src below with your actual GitHub image URL after uploading the screenshot -->
+![Azure ML Pipeline Run](pipeline_screenshot.png)
+
+The visual matches exactly what the code does: raw FD001 data flows into `Split Turbofan Dataset`, then `Create RUL Labels`, then branches into `Extract TSFresh Features` and `Engine Trend Features` in parallel, both eventually feeding into `Merge All Feature Tables`, and finally `DEAP And Model Training` at the bottom. Every node is green. I was unreasonably happy about this.
+
 ```mermaid
 graph TD
-    A[Raw ADLS - FD001] --> B[split_dataset]
-    B --> C[normalize_text - Compute RUL]
-    C --> D[semantic_embeddings - TSFresh]
-    C --> E[review_length - Summary Features]
-    C --> F[helpfulness_ratio - Trend Features]
-    D --> G[merge_features]
-    E --> G
-    F --> G
-    G --> H[tfidf_features - Variance / Corr / MI Filter]
-    H --> I[sentiment - DEAP GA + Model Training]
-    I --> J[Gold Layer - Final Features + Results]
+    A[Raw ADLS - FD001] --> B[Split Turbofan Dataset]
+    B --> C[Create RUL Labels]
+    C --> D[Extract TSFresh Features]
+    C --> E[Engine Trend Features]
+    D --> F[Filter Features]
+    F --> G[Merge All Feature Tables]
+    E --> H[Handcrafted Engine Summary Features]
+    H --> G
+    G --> I[DEAP And Model Training]
+    I --> J[results_out]
+    I --> K[features_out]
 ```
 
 ```bash
