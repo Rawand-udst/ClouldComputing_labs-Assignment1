@@ -580,3 +580,5 @@ az ml job create --file pipelines/pipeline.yml
 Did I upload the dataset to the wrong container on the first try? Yes. Did I leave the RUL column in the tsfresh input and stare at suspiciously perfect scores for ten minutes before catching it? Also yes. Did the DEAP GA select all 50 features on my first run because I forgot the penalty term? You already know the answer. Did Gradient Boosting hit R²=0.995 and briefly make me feel like I understood machine learning deeply before I remembered it's just a clean NASA simulation dataset? Every single time.
 
 Survived. Submitted. No regrets. Well — one regret: I should have used `MinimalFCParameters` from the start instead of trying the full parameter set "just to see."
+
+I was trying to add some screenshots and memes but it won't be uploaded idk why but it's not my problem :)
