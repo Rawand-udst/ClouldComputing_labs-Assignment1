@@ -433,10 +433,7 @@ This directly addresses the assignment requirement to measure and optimize pipel
 ## Pipeline DAG
 
 Here's the actual Azure ML pipeline run — all green, all completed, no components on fire:
-
-<!-- Replace the src below with your actual GitHub image URL after uploading the screenshot -->
-![Azure ML Pipeline Run](pipeline_screenshot.png)
-
+(ig i'm on fire cuz the screanshot is not uploding)
 
 The visual matches exactly what the code does: raw FD001 data flows into `Split Turbofan Dataset`, then `Create RUL Labels`, then branches into `Extract TSFresh Features` and `Engine Trend Features` in parallel, both eventually feeding into `Merge All Feature Tables`, and finally `DEAP And Model Training` at the bottom. Every node is green. I was unreasonably happy about this.
 
