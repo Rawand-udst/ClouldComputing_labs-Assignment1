@@ -1,2 +1,2 @@
-# ClouldComputing_labs-Assignment1
-lab2 + lab3 + Assignment1
+# ClouldComputing_labs-Assignments
+labs + Assignments
