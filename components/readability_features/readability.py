@@ -1,4 +1,4 @@
-# Couldn't use it cuz i got out of memory error when i ran the pipleline
+# Couldn't use it cuz i got out of memory error when i ran the pipleline so i had to remove it so sad
 import argparse
 import os
 import re
