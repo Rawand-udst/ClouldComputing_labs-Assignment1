@@ -666,6 +666,9 @@ graph TD
 ```bash
 az ml job create --file pipelines/feature_pipeline.yml
 ```
+
+<img width="1583" height="785" alt="image" src="https://github.com/user-attachments/assets/58996f1e-3b4a-45d7-b7f8-e2afb2041759" />
+
 ---
 
 ### Pipeline Execution
