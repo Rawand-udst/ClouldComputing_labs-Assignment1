@@ -1,0 +1,14 @@
+$schema: https://azuremlschemas.azureedge.net/latest/featurestorefeatureset.schema.json
+
+name: amazon_review_text_features
+version: "1"
+description: Amazon review text features for Lab 4 Assignment 1
+
+entities:
+  - azureml:AmazonReview:1  
+
+specification:
+  path: .
+
+materialization_settings:
+  offline_enabled: true

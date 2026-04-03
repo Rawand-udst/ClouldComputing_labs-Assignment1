@@ -1,0 +1,31 @@
+$schema: https://azuremlschemas.azureedge.net/latest/featuresetSpec.schema.json
+
+source:
+  type: parquet
+  path: azureml://subscriptions/a485bb50-61aa-4b2f-bc7f-b6b53539b9d3/resourceGroups/Project/workspaces/60300832-test/datastores/workspaceblobstore/paths/azureml/383b2dbf-5cfb-48f0-88fa-fd8992ac636e/out/data.parquet
+  timestamp_column:
+    name: unixReviewTime
+
+index_columns:
+  - name: asin
+    type: string
+  - name: reviewerID
+    type: string
+
+features:
+  - name: review_length_chars
+    type: float
+  - name: review_length_words
+    type: float
+  - name: sentiment_pos
+    type: float
+  - name: sentiment_neg
+    type: float
+  - name: sentiment_neu
+    type: float
+  - name: sentiment_compound
+    type: float
+  - name: tfidf_vector
+    type: string  
+  - name: sbert_vector
+    type: string 

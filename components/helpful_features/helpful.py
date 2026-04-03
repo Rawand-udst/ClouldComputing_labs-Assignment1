@@ -1,3 +1,4 @@
+# Couldn't use it cuz i got out of memory error when i ran the pipleline
 import argparse
 import os
 import pandas as pd
