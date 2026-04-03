@@ -490,6 +490,8 @@ This repository contains the full feature engineering workflow for the Amazon El
 <img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/ef700d0b-6503-4542-9f35-fc5a800bc13b" />
 <img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/bcc850c1-ace3-494b-971f-219c7fa76c87" />
 <img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/2317f27d-f343-47bd-90f9-7d26e5b46ecb" />
+<img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/6151bbf5-cde8-4a83-90cb-710ba5e0376e" />
+
 
 **Azure ML datastore access to the curated data lake container was configured using a storage account key. The datastore was registered in the AML workspace to enable pipeline components to read the sampled Gold dataset from the curated container.**
 
