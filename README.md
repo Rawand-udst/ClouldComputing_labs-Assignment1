@@ -426,51 +426,56 @@ Wrote the enriched dataset (original columns + `tokens`, `filtered_tokens`, `tf_
 ```
 .
 ├── components/
-│   ├── split_dataset/
+│   ├── helpful_features/
 │   │   ├── component.yml
-│   │   └── split.py
+│   │   └── helpful.py             # ⚠️ not used in the pipeline cuz OOM error
+│   ├── merge_features/
+│   │   ├── component.yml
+│   │   └── merge.py
 │   ├── normalize_text/
 │   │   ├── component.yml
 │   │   └── normalize.py
+│   ├── readability_features/
+│   │   ├── component.yml
+│   │   └── readability.py          # ⚠️ not used in the pipeline cuz OOM error
 │   ├── review_length/
 │   │   ├── component.yml
 │   │   └── review_length.py
-│   ├── tfidf_features/
-│   │   ├── component.yml
-│   │   └── tfidf.py
 │   ├── semantic_embeddings/
 │   │   ├── component.yml
 │   │   ├── conda.yml
 │   │   └── embed.py
-│   ├── helpful_features/
-│   │   ├── component.yml
-│   │   └── helpful.py
-│   ├── readability_features/
-│   │   ├── component.yml
-│   │   └── readability.py
 │   ├── sentiment/
 │   │   ├── component.yml
 │   │   ├── conda.yml
 │   │   └── sentiment.py
-│   └── merge_features/
+│   ├── split_dataset/
+│   │   ├── component.yml
+│   │   └── split.py
+│   └── tfidf_features/
 │       ├── component.yml
-│       └── merge.py
+│       └── tfidf.py
 │
 ├── data_assets/
 │   └── features_v1_sampled.yml
 │
 ├── datastores/
-│   └── curated_adls.yml
+│   └── raw_adls.yml                
 │
 ├── feature_store/
-│   └── entity_amazon_review.yml
+│   ├── .amlignore
+│   ├── entity_amazon_review.yml
+│   ├── FeatureSetSpec.yaml
+│   └── whatever_you_wanna_call_it.yml
 │
 ├── pipelines/
 │   └── feature_pipeline.yml
 │
-├── .gitignore
+├── 01_Assignment_Notebook.ipynb
 └── README.md
 ```
+> 📝 **Note on the additional features:** A fully built component covering punctuation counts, casing signals, and lexicon-based sentiment — not in the repo, not in the pipeline, not merged anywhere. Why? OOM. It lives on in spirit (and in local files that will never be pushed).
+
 This repository contains the full feature engineering workflow for the Amazon Electronics review dataset.
 
 - **components/** – Azure ML pipeline components responsible for individual feature transformations.
@@ -572,6 +577,8 @@ VADER scores: `sentiment_pos`, `sentiment_neg`, `sentiment_neu`, `sentiment_comp
 #### `sbert_embeddings`
 `all-MiniLM-L6-v2` → 384-dimensional dense vectors per review. Captures semantic meaning that TF-IDF misses — "great product" and "excellent item" land near each other in embedding space.
 
+## U don't have to read this since this is the OOM PART unfortunately but i explained them tho
+
 #### `helpful_features` (Bonus)
 
 Extracts vote-based signals from the `helpful` column, which is stored as an array `[helpful_votes, total_votes]`. The script unpacks it safely — if the array is malformed or missing it defaults to `[0, 0]` — and computes three features:
@@ -597,6 +604,8 @@ Computes structural text features from `reviewText` using regex-based parsing (n
 | `avg_sentence_len_words` | `word_count / sentence_count` (denominator replaced with 1 when zero) |
 
 These capture how structured and verbose a review is — things like whether someone wrote one long run-on sentence or several short punchy ones. Longer, more structured reviews may reflect more analytical reviewers, which can correlate with rating behavior.
+
+## END of u don't have to read NOW READ THE RESTTT!!
 
 #### `merge_features`
 After all feature engineering components completed, their outputs were merged into a single dataset.
@@ -652,14 +661,10 @@ graph TD
     D --> H
     E --> H
     C --> I[sbert_train]
-    C --> J[helpful_train]
-    C --> P[readability_train]
     F --> K[merge_all]
     G --> K
     H --> K
     I --> K
-    J --> K
-    P --> K
     K --> L[Feature Store]
 ```
 
@@ -691,12 +696,12 @@ Each component runs on the configured compute cluster and writes outputs as URI 
 | `sentiment_compound` | VADER | Overall polarity (−1 to +1) |
 | TF-IDF weights (5k) | TF-IDF component | Word/phrase frequency and importance |
 | SBERT vectors (384d) | SBERT component | Semantic meaning, handles synonyms |
-| `word_count`, `char_count` | readability_features | Verbosity and length |
-| `avg_word_len`, `avg_sentence_len_words` | readability_features | Writing complexity and structure |
-| `sentence_count` | readability_features | How many sentences the review contains |
-| `helpful_votes`, `total_votes` | helpful_features | Raw vote counts |
-| `helpful_ratio` | helpful_features | Social credibility — non-text signal |
-
+| `word_count`, `char_count` | readability_features (just imagine it's there) | Verbosity and length |
+| `avg_word_len`, `avg_sentence_len_words` | readability_features (here2) | Writing complexity and structure |
+| `sentence_count` | readability_features (here3)| How many sentences the review contains |
+| `helpful_votes`, `total_votes` | helpful_features (here4)| Raw vote counts |
+| `helpful_ratio` | helpful_features (here5)| Social credibility — non-text signal |
+#### i'm heart broken cuz i couldn't add them so i need more bonus :(
 ---
 
 ## Key Things I Learned
