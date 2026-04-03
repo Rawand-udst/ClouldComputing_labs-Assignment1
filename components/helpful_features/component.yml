@@ -1,7 +1,7 @@
 $schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
 
 name: helpful_features
-display_name: Helpful Vote Features
+display_name: Helpful Features
 type: command
 
 inputs:

@@ -1,80 +1,83 @@
-import argparse
 import os
+import argparse
 import pandas as pd
-import numpy as np
-import torch
 from sentence_transformers import SentenceTransformer
+import torch
+import pyarrow as pa
+import pyarrow.parquet as pq
+
+print("Torch CUDA available:", torch.cuda.is_available())
 
 
 def parse_args():
-    p = argparse.ArgumentParser()
-    p.add_argument("--data", type=str, required=True)
-    p.add_argument("--text_col", type=str, default="reviewText")
-    p.add_argument("--model_name", type=str, default="sentence-transformers/all-MiniLM-L6-v2")
-    p.add_argument("--batch_size", type=int, default=64)
-    p.add_argument("--out", type=str, required=True)
-    return p.parse_args()
-
-
-def load_df(folder_path: str) -> pd.DataFrame:
-    p = os.path.join(folder_path, "data.parquet")
-    if not os.path.exists(p):
-        files = [f for f in os.listdir(folder_path) if f.endswith(".parquet")]
-        if not files:
-            raise FileNotFoundError(f"No parquet found in {folder_path}")
-        p = os.path.join(folder_path, files[0])
-    return pd.read_parquet(p)
-
-
-def save_df(df: pd.DataFrame, out_folder: str):
-    os.makedirs(out_folder, exist_ok=True)
-    df.to_parquet(os.path.join(out_folder, "data.parquet"), index=False)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data", type=str, required=True)
+    parser.add_argument("--out", type=str, required=True)
+    parser.add_argument("--model_name", type=str, default="all-MiniLM-L6-v2")
+    parser.add_argument("--chunk_size", type=int, default=1000)
+    parser.add_argument("--batch_size", type=int, default=8)
+    return parser.parse_args()
 
 
 def main():
     args = parse_args()
 
-    df = load_df(args.data)
+    # Writable cache locations for Azure ML
+    os.environ["HF_HOME"] = "/tmp/huggingface"
+    os.environ["TRANSFORMERS_CACHE"] = "/tmp/huggingface"
+    os.environ["TORCH_HOME"] = "/tmp/torch"
 
-    if args.text_col not in df.columns:
-        raise ValueError(f"Column '{args.text_col}' not found")
+    input_path = os.path.join(args.data, "data.parquet")
+    output_path = os.path.join(args.out, "data.parquet")
+    os.makedirs(args.out, exist_ok=True)
 
-    texts = df[args.text_col].fillna("").astype(str).tolist()
+    df = pd.read_parquet(input_path)
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    # Basic filtering (safe + deterministic)
+    df = df[df["reviewText"].notna()]
+    df = df[df["reviewText"].str.len() > 0]
 
-    print("Loading model...")
-    model = SentenceTransformer(args.model_name, device=device)
-
-    print("Generating embeddings...")
-    embeddings = model.encode(
-        texts,
-        batch_size=args.batch_size,
-        show_progress_bar=True,
-        convert_to_numpy=True,
-        normalize_embeddings=True
+    model = SentenceTransformer(
+        args.model_name,
+        cache_folder="/tmp/huggingface",
+        device="cpu"
     )
 
-    # ✅ reduce memory usage
-    embeddings = embeddings.astype(np.float16)
+    writer = None
 
-    print("Embedding shape:", embeddings.shape)
+    with torch.no_grad():
+        for start in range(0, len(df), args.chunk_size):
+            end = start + args.chunk_size
+            chunk = df.iloc[start:end].copy()
 
-    # keep only keys + embeddings
-    keep_cols = ["asin", "reviewerID"]
-    df = df[keep_cols]
+            texts = chunk["reviewText"].astype(str).tolist()
 
-    # create numeric embedding columns
-    emb_dim = embeddings.shape[1]
+            embeddings = model.encode(
+                texts,
+                batch_size=args.batch_size,
+                convert_to_numpy=True,
+                show_progress_bar=(start == 0)
+            )
 
-    for i in range(emb_dim):
-        df[f"emb_{i}"] = embeddings[:, i]
+            chunk["sbert_vector"] = embeddings.tolist()
 
-    save_df(df, args.out)
+            table = pa.Table.from_pandas(chunk, preserve_index=False)
 
-    print("Embedding done ✅")
-    print("Rows:", len(df))
-    print("Embedding dim:", emb_dim)
+            if writer is None:
+                writer = pq.ParquetWriter(output_path, table.schema)
+
+            writer.write_table(table)
+
+            # Cleanup
+            del embeddings
+            del chunk
+            torch.cuda.empty_cache()
+
+    if writer:
+        writer.close()
+
+    print("Rows embedded:", len(df))
+    print("Embedding dimension:", model.get_sentence_embedding_dimension())
 
 
 if __name__ == "__main__":

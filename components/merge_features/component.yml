@@ -1,6 +1,7 @@
 $schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+
 name: merge_features
-display_name: Merge All Features
+display_name: Merge Feature Outputs
 type: command
 
 inputs:
@@ -12,24 +13,22 @@ inputs:
     type: uri_folder
   sbert:
     type: uri_folder
-  helpful:
-    type: uri_folder
-  readability:
-    type: uri_folder
+  # helpful:
+  #   type: uri_folder
+  # readability:
+  #   type: uri_folder
 
 outputs:
   out:
     type: uri_folder
 
 code: .
-command: >-
+command: >
   python merge.py
   --length ${{inputs.length}}
   --sentiment ${{inputs.sentiment}}
   --tfidf ${{inputs.tfidf}}
   --sbert ${{inputs.sbert}}
-  --helpful ${{inputs.helpful}}
-  --readability ${{inputs.readability}}
   --out ${{outputs.out}}
 
 environment: azureml:AzureML-sklearn-1.1-ubuntu20.04-py38-cpu@latest

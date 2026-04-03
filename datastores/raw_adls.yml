@@ -1,0 +1,11 @@
+$schema: https://azuremlschemas.azureedge.net/latest/azureBlob.schema.json
+
+name: rawblob
+type: azure_blob
+description: Raw container for turbofan files
+
+account_name: amazondatalake60304948
+container_name: raw
+
+credentials:
+  account_key: t8pg68f8Wo84sAYKeZ6k8wDm/X2WOYuUcRLMwcRo2UTs/lyzH8ok/m2c/hJPg7LZ3cRp/kD3y/Gp+ASt4JvYPw==

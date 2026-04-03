@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", type=str, required=True)
@@ -14,6 +15,7 @@ def parse_args():
     parser.add_argument("--test_out", type=str, required=True)
     return parser.parse_args()
 
+
 def main():
     args = parse_args()
 
@@ -23,7 +25,7 @@ def main():
     # First split: train vs temp
     train_df, temp_df = train_test_split(
         df,
-        train_size=args.train_ratio,
+        test_size=(1 - args.train_ratio),
         random_state=args.seed,
         shuffle=True
     )
@@ -33,7 +35,7 @@ def main():
 
     val_df, test_df = train_test_split(
         temp_df,
-        train_size=val_size,
+        test_size=(1 - val_size),
         random_state=args.seed,
         shuffle=True
     )
@@ -50,6 +52,7 @@ def main():
     print("Train rows:", len(train_df))
     print("Validation rows:", len(val_df))
     print("Test rows:", len(test_df))
+
 
 if __name__ == "__main__":
     main()

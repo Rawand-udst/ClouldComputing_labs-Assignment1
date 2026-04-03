@@ -1,11 +1,12 @@
 $schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
 type: pipeline
+
 compute: azureml:cpu-cluster-BIG-60304948
 
-inputs:  
+inputs:
   sampled_data:
     type: uri_folder
-    path: azureml:amazon_electronics_features_v1_sampled@latest
+    path: azureml:amazon_electronics_features_v1_sampled:1
 
 jobs:
   split:
@@ -32,10 +33,9 @@ jobs:
     inputs:
       data: ${{parent.jobs.split.outputs.test}}
 
-  # ✅ LENGTH (fixed name)
   length_train:
     type: command
-    component: azureml:review_length_features@latest
+    component: ../components/review_length/component.yml
     inputs:
       data: ${{parent.jobs.normalize_train.outputs.out}}
 
@@ -53,24 +53,23 @@ jobs:
       val: ${{parent.jobs.normalize_val.outputs.out}}
       test: ${{parent.jobs.normalize_test.outputs.out}}
 
-  # ✅ SEMANTIC (fixed name)
   sbert_train:
     type: command
-    component: azureml:semantic_embeddings@latest
+    component: ../components/semantic_embeddings/component.yml
     inputs:
       data: ${{parent.jobs.normalize_train.outputs.out}}
 
-  helpful_train:
-    type: command
-    component: azureml:helpful_features@latest
-    inputs:
-      data: ${{parent.jobs.normalize_train.outputs.out}}
+  # helpful_train:
+  #   type: command
+  #   component: azureml:helpful_features@latest
+  #   inputs:
+  #     data: ${{parent.jobs.normalize_train.outputs.out}}
 
-  readability_train:
-    type: command
-    component: azureml:readability_features@latest
-    inputs:
-      data: ${{parent.jobs.normalize_train.outputs.out}}
+  # readability_train:
+  #   type: command
+  #   component: azureml:readability_features@latest
+  #   inputs:
+  #     data: ${{parent.jobs.normalize_train.outputs.out}}
 
   merge_all:
     type: command
@@ -78,7 +77,7 @@ jobs:
     inputs:
       length: ${{parent.jobs.length_train.outputs.out}}
       sentiment: ${{parent.jobs.sentiment_train.outputs.out}}
-      tfidf: ${{parent.jobs.tfidf.outputs.out_train}}
+      tfidf: ${{parent.jobs.tfidf.outputs.train_out}}
       sbert: ${{parent.jobs.sbert_train.outputs.out}}
-      helpful: ${{parent.jobs.helpful_train.outputs.out}}
-      readability: ${{parent.jobs.readability_train.outputs.out}}
+      # helpful: ${{parent.jobs.helpful_train.outputs.out}}
+      # readability: ${{parent.jobs.readability_train.outputs.out}}

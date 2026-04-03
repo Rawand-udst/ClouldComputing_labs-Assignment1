@@ -1,15 +1,12 @@
 $schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
 
-name: review_length_features
+name: length_features
 display_name: Review Length Features
 type: command
 
 inputs:
   data:
     type: uri_folder
-  text_col:
-    type: string
-    default: reviewText
 
 outputs:
   out:
@@ -19,7 +16,6 @@ code: .
 command: >
   python review_length.py
   --data ${{inputs.data}}
-  --text_col ${{inputs.text_col}}
   --out ${{outputs.out}}
 
 environment: azureml:AzureML-sklearn-1.1-ubuntu20.04-py38-cpu@latest

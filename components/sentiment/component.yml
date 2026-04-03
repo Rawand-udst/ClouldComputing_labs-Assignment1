@@ -7,9 +7,6 @@ type: command
 inputs:
   data:
     type: uri_folder
-  text_col:
-    type: string
-    default: reviewText
 
 outputs:
   out:
@@ -19,7 +16,6 @@ code: .
 command: >
   python sentiment.py
   --data ${{inputs.data}}
-  --text_col ${{inputs.text_col}}
   --out ${{outputs.out}}
 
 environment:

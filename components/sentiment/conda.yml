@@ -1,10 +1,9 @@
-name: sentiment-env
 channels:
   - conda-forge
 dependencies:
   - python=3.8
   - pip
   - pip:
+      - nltk
       - pandas
       - pyarrow
-      - nltk
