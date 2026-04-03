@@ -39,6 +39,7 @@ def main():
     os.makedirs(args.out, exist_ok=True)
     out.to_parquet(os.path.join(args.out, "data.parquet"), index=False)
 
+
     print("Rows processed:", len(out))
 
 
