@@ -8,7 +8,6 @@ import pyarrow.parquet as pq
 
 print("Torch CUDA available:", torch.cuda.is_available())
 
-
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", type=str, required=True)
@@ -33,7 +32,7 @@ def main():
 
     df = pd.read_parquet(input_path)
 
-    # Basic filtering (safe + deterministic)
+    # Basic filtering to remove rows with missing or empty review text before embedding
     df = df[df["reviewText"].notna()]
     df = df[df["reviewText"].str.len() > 0]
 

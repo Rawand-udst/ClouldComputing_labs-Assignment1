@@ -4,16 +4,23 @@ type: pipeline
 compute: azureml:cpu-cluster-BIG-60304948
 
 inputs:
-  sampled_data:
+  raw_data:
     type: uri_folder
-    path: azureml:amazon_electronics_features_v1_sampled:1
+    path: azureml:amazon_electronics_features_v1_sampled@latest
 
 jobs:
+
+  sample:
+    type: command
+    component: azureml:sample_dataset@latest
+    inputs:
+      data: ${{parent.inputs.raw_data}}
+
   split:
     type: command
     component: azureml:split_dataset@latest
     inputs:
-      data: ${{parent.inputs.sampled_data}}
+      data: ${{parent.jobs.sample.outputs.out}}
 
   normalize_train:
     type: command
@@ -33,18 +40,62 @@ jobs:
     inputs:
       data: ${{parent.jobs.split.outputs.test}}
 
+  normalize_deploy:
+    type: command
+    component: azureml:normalize_text@latest
+    inputs:
+      data: ${{parent.jobs.split.outputs.deploy}}
+
   length_train:
     type: command
     component: ../components/review_length/component.yml
     inputs:
       data: ${{parent.jobs.normalize_train.outputs.out}}
 
+  length_val:
+    type: command
+    component: ../components/review_length/component.yml
+    inputs:
+      data: ${{parent.jobs.normalize_val.outputs.out}}
+
+  length_test:
+    type: command
+    component: ../components/review_length/component.yml
+    inputs:
+      data: ${{parent.jobs.normalize_test.outputs.out}}
+
+  length_deploy:
+    type: command
+    component: ../components/review_length/component.yml
+    inputs:
+      data: ${{parent.jobs.normalize_deploy.outputs.out}}
+
+
   sentiment_train:
     type: command
-    component: azureml:sentiment_features@latest
+    component: ../components/sentiment/component.yml
     inputs:
       data: ${{parent.jobs.normalize_train.outputs.out}}
 
+  sentiment_val:
+    type: command
+    component: ../components/sentiment/component.yml
+    inputs:
+      data: ${{parent.jobs.normalize_val.outputs.out}}
+
+  sentiment_test:
+    type: command
+    component: ../components/sentiment/component.yml
+    inputs:
+      data: ${{parent.jobs.normalize_test.outputs.out}}
+
+  sentiment_deploy:
+    type: command
+    component: ../components/sentiment/component.yml
+    inputs:
+      data: ${{parent.jobs.normalize_deploy.outputs.out}}
+
+# Fit on train, apply to val/test/deploy
   tfidf:
     type: command
     component: azureml:tfidf_features@latest
@@ -52,6 +103,8 @@ jobs:
       train: ${{parent.jobs.normalize_train.outputs.out}}
       val: ${{parent.jobs.normalize_val.outputs.out}}
       test: ${{parent.jobs.normalize_test.outputs.out}}
+      deploy: ${{parent.jobs.normalize_deploy.outputs.out}}
+
 
   sbert_train:
     type: command
@@ -59,19 +112,26 @@ jobs:
     inputs:
       data: ${{parent.jobs.normalize_train.outputs.out}}
 
-  # helpful_train:
-  #   type: command
-  #   component: azureml:helpful_features@latest
-  #   inputs:
-  #     data: ${{parent.jobs.normalize_train.outputs.out}}
+  sbert_val:
+    type: command
+    component: ../components/semantic_embeddings/component.yml
+    inputs:
+      data: ${{parent.jobs.normalize_val.outputs.out}}
 
-  # readability_train:
-  #   type: command
-  #   component: azureml:readability_features@latest
-  #   inputs:
-  #     data: ${{parent.jobs.normalize_train.outputs.out}}
+  sbert_test:
+    type: command
+    component: ../components/semantic_embeddings/component.yml
+    inputs:
+      data: ${{parent.jobs.normalize_test.outputs.out}}
 
-  merge_all:
+  sbert_deploy:
+    type: command
+    component: ../components/semantic_embeddings/component.yml
+    inputs:
+      data: ${{parent.jobs.normalize_deploy.outputs.out}}
+
+
+  merge_train:
     type: command
     component: azureml:merge_features@latest
     inputs:
@@ -79,5 +139,30 @@ jobs:
       sentiment: ${{parent.jobs.sentiment_train.outputs.out}}
       tfidf: ${{parent.jobs.tfidf.outputs.train_out}}
       sbert: ${{parent.jobs.sbert_train.outputs.out}}
-      # helpful: ${{parent.jobs.helpful_train.outputs.out}}
-      # readability: ${{parent.jobs.readability_train.outputs.out}}
+
+  merge_val:
+    type: command
+    component: azureml:merge_features@latest
+    inputs:
+      length: ${{parent.jobs.length_val.outputs.out}}
+      sentiment: ${{parent.jobs.sentiment_val.outputs.out}}
+      tfidf: ${{parent.jobs.tfidf.outputs.val_out}}
+      sbert: ${{parent.jobs.sbert_val.outputs.out}}
+
+  merge_test:
+    type: command
+    component: azureml:merge_features@latest
+    inputs:
+      length: ${{parent.jobs.length_test.outputs.out}}
+      sentiment: ${{parent.jobs.sentiment_test.outputs.out}}
+      tfidf: ${{parent.jobs.tfidf.outputs.test_out}}
+      sbert: ${{parent.jobs.sbert_test.outputs.out}}
+
+  merge_deploy:
+    type: command
+    component: azureml:merge_features@latest
+    inputs:
+      length: ${{parent.jobs.length_deploy.outputs.out}}
+      sentiment: ${{parent.jobs.sentiment_deploy.outputs.out}}
+      tfidf: ${{parent.jobs.tfidf.outputs.deploy_out}}
+      sbert: ${{parent.jobs.sbert_deploy.outputs.out}}

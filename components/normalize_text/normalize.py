@@ -56,7 +56,7 @@ def main():
     # Normalize text
     df["reviewText"] = df["reviewText"].apply(normalize_text)
 
-    # Filter out empty or very short reviews (<10 characters)
+    # Filter out empty or very short reviews 
     df = df[df["reviewText"].str.len() >= 10]
 
     # Write output

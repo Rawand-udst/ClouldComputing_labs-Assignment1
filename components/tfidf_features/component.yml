@@ -11,9 +11,11 @@ inputs:
     type: uri_folder
   test:
     type: uri_folder
+  deploy:
+    type: uri_folder
   max_features:
     type: integer
-    default: 100
+    default: 500
 
 outputs:
   train_out:
@@ -22,6 +24,8 @@ outputs:
     type: uri_folder
   test_out:
     type: uri_folder
+  deploy_out:
+    type: uri_folder
 
 code: .
 command: >
@@ -29,9 +33,11 @@ command: >
   --train ${{inputs.train}}
   --val ${{inputs.val}}
   --test ${{inputs.test}}
+  --deploy ${{inputs.deploy}}
   --out_train ${{outputs.train_out}}
   --out_val ${{outputs.val_out}}
   --out_test ${{outputs.test_out}}
+  --out_deploy ${{outputs.deploy_out}}
   --max_features ${{inputs.max_features}}
 
 environment: azureml:AzureML-sklearn-1.1-ubuntu20.04-py38-cpu@latest

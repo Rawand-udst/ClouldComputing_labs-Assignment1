@@ -12,8 +12,6 @@ def parse_args():
     parser.add_argument("--sentiment", type=str, required=True)
     parser.add_argument("--tfidf", type=str, required=True)
     parser.add_argument("--sbert", type=str, required=True)
-    # parser.add_argument("--helpful", type=str, required=True)
-    # parser.add_argument("--readability", type=str, required=True)
     parser.add_argument("--out", type=str, required=True)
     return parser.parse_args()
 
@@ -23,7 +21,7 @@ def main():
 
     length_df = pd.read_parquet(
         args.length,
-        columns=["asin", "reviewerID", "review_length_chars", "review_length_words"]
+        columns=["asin", "reviewerID", "overall", "review_length_chars", "review_length_words"]
     ).set_index(["asin", "reviewerID"])
 
     sentiment_df = pd.read_parquet(
@@ -40,19 +38,6 @@ def main():
         columns=["asin", "reviewerID", "tfidf_vector"]
     ).set_index(["asin", "reviewerID"])
 
-    # helpful_df = pd.read_parquet(
-    #     args.helpful,
-    #     columns=["asin", "reviewerID", "helpful_votes", "total_votes", "helpful_ratio"]
-    # ).set_index(["asin", "reviewerID"])
-
-    # readability_df = pd.read_parquet(
-    #     args.readability,
-    #     columns=[
-    #         "asin", "reviewerID",
-    #         "word_count", "char_count",
-    #         "avg_word_len", "sentence_count", "avg_sentence_len_words"
-    #     ]
-    # ).set_index(["asin", "reviewerID"])
 
     os.makedirs(args.out, exist_ok=True)
     output_path = os.path.join(args.out, "data.parquet")
@@ -79,11 +64,13 @@ def main():
                 .join(length_df, how="inner")
                 .join(sentiment_df, how="inner")
                 .join(tfidf_df, how="inner")
-                # .join(helpful_df, how="inner")
-                # .join(readability_df, how="inner")
             )
-
+ # Convert to PyArrow table
             chunk.reset_index(inplace=True)
+
+            # Sanity check
+            if "overall" not in chunk.columns:
+                raise RuntimeError("overall column missing after merge — check length input data")
 
             table = pa.Table.from_pandas(chunk)
 
@@ -97,6 +84,8 @@ def main():
         writer.close()
 
     print("Merge completed successfully")
+    print(f"Output columns: {pq.read_schema(output_path).names}")  # add this line
+
 
 
 if __name__ == "__main__":

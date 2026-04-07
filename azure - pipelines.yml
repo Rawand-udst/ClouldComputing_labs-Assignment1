@@ -1,0 +1,49 @@
+trigger:
+  branches:
+    include:
+      - lab5_model_training
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  AZURE_SUBSCRIPTION: SC-UDST-CCIT-DSAI3202-1
+  RESOURCE_GROUP: Project
+  WORKSPACE_NAME: 60300832-test
+
+steps:
+- checkout: self
+
+- task: AzureCLI@2
+  displayName: "Submit + stream Azure ML Training Job"
+  inputs:
+    azureSubscription: $(AZURE_SUBSCRIPTION)
+    scriptType: bash
+    scriptLocation: inlineScript
+    inlineScript: |
+      set -euo pipefail
+
+      az extension add -n ml -y || az extension update -n ml
+
+      az configure --defaults \
+        group=$(RESOURCE_GROUP) \
+        workspace=$(WORKSPACE_NAME)
+
+      echo "Submitting Azure ML job..."
+      JOB_NAME=$(az ml job create --file lab5/jobs/train_job.yml --query name -o tsv)
+      echo "Job name: $JOB_NAME"
+
+      # optional: store for later pipeline steps
+      echo "##vso[task.setvariable variable=AZML_JOB_NAME]$JOB_NAME"
+
+      echo "Streaming logs from Azure ML job..."
+      az ml job stream --name "$JOB_NAME"
+
+      echo "Checking final job status..."
+      STATUS=$(az ml job show --name "$JOB_NAME" --query status -o tsv)
+      echo "Final status: $STATUS"
+
+      if [ "$STATUS" != "Completed" ]; then
+        echo "Azure ML job did not complete successfully."
+        exit 1
+      fi
