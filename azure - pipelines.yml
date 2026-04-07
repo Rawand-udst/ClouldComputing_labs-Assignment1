@@ -1,15 +1,15 @@
 trigger:
   branches:
     include:
-      - lab5_model_training
+      - assignment2_model_training
 
 pool:
   vmImage: ubuntu-latest
 
 variables:
   AZURE_SUBSCRIPTION: SC-UDST-CCIT-DSAI3202-1
-  RESOURCE_GROUP: Project
-  WORKSPACE_NAME: 60300832-test
+  RESOURCE_GROUP: rg-60304948
+  WORKSPACE_NAME: Amazon-Electronics-Lab-60304948
 
 steps:
 - checkout: self
@@ -30,10 +30,10 @@ steps:
         workspace=$(WORKSPACE_NAME)
 
       echo "Submitting Azure ML job..."
-      JOB_NAME=$(az ml job create --file lab5/jobs/train_job.yml --query name -o tsv)
+      JOB_NAME=$(az ml job create --file jobs/train_job.yml --query name -o tsv)
       echo "Job name: $JOB_NAME"
 
-      # optional: store for later pipeline steps
+      # store for later steps
       echo "##vso[task.setvariable variable=AZML_JOB_NAME]$JOB_NAME"
 
       echo "Streaming logs from Azure ML job..."
