@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Lab 4 — Text Feature Engineering with Azure ML
 ---
 
@@ -714,3 +715,7 @@ Survived? yes , Regreted not getting assassinated by iran? **HELL YEASS**
 
 <img width="1200" height="738" alt="image" src="https://github.com/user-attachments/assets/e149ec68-a3ef-4a66-ba1f-1184e5c61b6c" />
 
+=======
+# ClouldComputing_labs-Assignments
+labs + Assignments
+>>>>>>> 0c42d2d4cc8ca596e3402dad3360071f7439f1aa
