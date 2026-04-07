@@ -1,4 +1,5 @@
 import argparse
+from email import parser
 import os
 from pyexpat import model
 import time
@@ -47,8 +48,8 @@ def parse_args():
     parser.add_argument("--max_train_rows", type=int, default=50000)
     parser.add_argument("--max_val_rows",   type=int, default=15000)
     parser.add_argument("--max_test_rows",  type=int, default=15000)
-    parser.add_argument("--C",              type=float, default=1.0)
-    parser.add_argument("--max_iter",       type=int,   default=300)
+    parser.add_argument("--C",        type=float, default=0.4765063986113154)
+    parser.add_argument("--max_iter", type=int,   default=300)
     return parser.parse_args()
 
 
@@ -180,10 +181,10 @@ def main():
     # ---------- train ----------
     print("Training model...")
     model = LogisticRegression(
-    C=args.C,
-    max_iter=args.max_iter,
-    solver="liblinear",  
-    random_state=42,     
+        C=args.C,
+        max_iter=args.max_iter,
+        solver="liblinear",  
+        random_state=42,     
     )
     model.fit(X_train, y_train)
 
