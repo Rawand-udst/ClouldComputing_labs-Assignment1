@@ -1,0 +1,17 @@
+$schema: https://azuremlschemas.azureedge.net/latest/managedOnlineDeployment.schema.json
+
+name: amazon-review-deployment
+endpoint_name: amazon-review-endpoint-60304948
+
+model: azureml:amazon-review-sentiment-model@latest
+
+code_configuration:
+  code: ../src
+  scoring_script: score.py
+
+environment:
+  image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu20.04
+  conda_file: ../env/inference_conda.yml
+
+instance_type: Standard_F2s_v2
+instance_count: 1
