@@ -99,8 +99,7 @@ X = build_feature_matrix(df)
 # Endpoint information
 # --------------------------------------------------
 ENDPOINT_URL = "https://amazon-review-endpoint-60304948.qatarcentral.inference.ml.azure.com/score"
-API_KEY = "9CbfOEGKBTwJjvt3oOpVcl6qqxJoDWP6doDAg3GbWzbZlWNtw7X4JQQJ99CDAAAAAAAAAAAAINFRAZML1kAt"
- 
+API_KEY = "<U_WANNA_KNOW_SO_BAD>"
 
 headers = {
     "Content-Type": "application/json",
