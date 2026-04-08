@@ -58,7 +58,7 @@ df = df[df["overall"].isin([1, 2, 4, 5])].copy()
 df["label"] = (df["overall"] >= 4).astype(int)
 
 # test on a small sample first so endpoint does not timeout
-df = df.head(40000)
+df = df.head(8000)
 
 y_true = df["label"].values
 
