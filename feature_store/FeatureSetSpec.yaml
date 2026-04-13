@@ -2,7 +2,7 @@ $schema: https://azuremlschemas.azureedge.net/latest/featuresetSpec.schema.json
 
 source:
   type: parquet
-  path: azureml://subscriptions/a485bb50-61aa-4b2f-bc7f-b6b53539b9d3/resourceGroups/Project/workspaces/60300832-test/datastores/workspaceblobstore/paths/azureml/383b2dbf-5cfb-48f0-88fa-fd8992ac636e/out/data.parquet
+  path: azureml://subscriptions/a485bb50-61aa-4b2f-bc7f-b6b53539b9d3/resourceGroups/Project/workspaces/60304948-test/datastores/workspaceblobstore/paths/azureml/383b2dbf-5cfb-48f0-88fa-fd8992ac636e/out/data.parquet
   timestamp_column:
     name: unixReviewTime
 
