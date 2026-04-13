@@ -13,18 +13,18 @@ Throughout the lab, I maintained a clear GitHub workflow by committing changes w
 This lab helped me understand how data ingestion, transformation, automation, version control, and cloud resource management work together in a real-world data engineering workflow.
 
 **Screenshot**
-<img width="975" height="566" alt="image" src="https://github.com/user-attachments/assets/00bbaa71-921a-420a-b970-e46f6e954437" />
+<img width="975" height="566" alt="image" src="https://github.com/user-attachments/assets/00bbaa71-921a-420a-b970-e46f6e954437"/>
 
-<img width="975" height="380" alt="image" src="https://github.com/user-attachments/assets/3c85de2c-5217-47e3-b2e7-9fff26cde5e2" />
+<img width="975" height="380" alt="image" src="https://github.com/user-attachments/assets/3c85de2c-5217-47e3-b2e7-9fff26cde5e2"/>
 
-<img width="975" height="171" alt="image" src="https://github.com/user-attachments/assets/09908af9-7619-44f9-a4d5-1557b3f3f4ae" />
+<img width="975" height="171" alt="image" src="https://github.com/user-attachments/assets/09908af9-7619-44f9-a4d5-1557b3f3f4ae"/>
 
-<img width="975" height="342" alt="image" src="https://github.com/user-attachments/assets/58877329-d902-4a10-be66-02213cb59e2c" />
+<img width="975" height="342" alt="image" src="https://github.com/user-attachments/assets/58877329-d902-4a10-be66-02213cb59e2c"/>
 
-<img width="975" height="395" alt="image" src="https://github.com/user-attachments/assets/d6ee0fba-53c1-404b-90d7-8312b351baec" />
+<img width="975" height="395" alt="image" src="https://github.com/user-attachments/assets/d6ee0fba-53c1-404b-90d7-8312b351baec"/>
 
-<img width="975" height="609" alt="image" src="https://github.com/user-attachments/assets/baa02096-bef5-4641-84a1-e9af8d5760b9" />
+<img width="975" height="609" alt="image" src="https://github.com/user-attachments/assets/baa02096-bef5-4641-84a1-e9af8d5760b9"/>
 
-<img width="975" height="612" alt="image" src="https://github.com/user-attachments/assets/da548c54-73f8-4160-b716-540f37574f17" />
+<img width="975" height="612" alt="image" src="https://github.com/user-attachments/assets/da548c54-73f8-4160-b716-540f37574f17"/>
 
-<img width="975" height="427" alt="image" src="https://github.com/user-attachments/assets/e4d9f3af-e038-4e94-9a29-c518b9cb8bca" />
+<img width="975" height="427" alt="image" src="https://github.com/user-attachments/assets/e4d9f3af-e038-4e94-9a29-c518b9cb8bca"/>
