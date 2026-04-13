@@ -28,6 +28,3 @@ This lab helped me understand how data ingestion, transformation, automation, ve
 <img width="975" height="612" alt="image" src="https://github.com/user-attachments/assets/da548c54-73f8-4160-b716-540f37574f17" />
 
 <img width="975" height="427" alt="image" src="https://github.com/user-attachments/assets/e4d9f3af-e038-4e94-9a29-c518b9cb8bca" />
-
-
-
